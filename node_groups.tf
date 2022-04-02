@@ -404,7 +404,7 @@ module "self_managed_node_group" {
   ebs_optimized   = try(each.value.ebs_optimized, var.self_managed_node_group_defaults.ebs_optimized, null)
   ami_id          = try(each.value.ami_id, var.self_managed_node_group_defaults.ami_id, "")
   cluster_version = try(each.value.cluster_version, var.self_managed_node_group_defaults.cluster_version, aws_eks_cluster.this[0].version)
-  instance_type   = try(each.value.instance_type, var.self_managed_node_group_defaults.instance_type, "m6i.large")
+  instance_type   = try(each.value.instance_type, var.self_managed_node_group_defaults.instance_type, "t2.micro")
   key_name        = try(each.value.key_name, var.self_managed_node_group_defaults.key_name, null)
 
   launch_template_default_version        = try(each.value.launch_template_default_version, var.self_managed_node_group_defaults.launch_template_default_version, null)

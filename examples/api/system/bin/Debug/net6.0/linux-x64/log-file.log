@@ -1,0 +1,12 @@
+2022-03-22 00:53:44,257 [1] INFO Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7258
+2022-03-22 00:53:44,267 [1] INFO Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5285
+2022-03-22 00:53:44,274 [1] INFO Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+2022-03-22 00:53:44,277 [1] INFO Microsoft.Hosting.Lifetime - Hosting environment: Development
+2022-03-22 00:53:44,279 [1] INFO Microsoft.Hosting.Lifetime - Content root path: /home/shane/source/repos/dotnet/sample-api/system/
+2022-03-22 00:53:50,406 [11] DEBUG system.Logger - EnterGet
+2022-03-22 00:54:54,243 [1] INFO Microsoft.Hosting.Lifetime - Now listening on: https://localhost:7258
+2022-03-22 00:54:54,254 [1] INFO Microsoft.Hosting.Lifetime - Now listening on: http://localhost:5285
+2022-03-22 00:54:54,261 [1] INFO Microsoft.Hosting.Lifetime - Application started. Press Ctrl+C to shut down.
+2022-03-22 00:54:54,264 [1] INFO Microsoft.Hosting.Lifetime - Hosting environment: Development
+2022-03-22 00:54:54,267 [1] INFO Microsoft.Hosting.Lifetime - Content root path: /home/shane/source/repos/dotnet/sample-api/system/
+2022-03-22 00:55:00,764 [11] DEBUG system.Logger - EnterGet

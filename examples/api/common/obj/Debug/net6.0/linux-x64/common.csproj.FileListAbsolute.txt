@@ -1,0 +1,12 @@
+/home/shane/source/repos/dotnet/sample-api/common/bin/Debug/net6.0/linux-x64/common.deps.json
+/home/shane/source/repos/dotnet/sample-api/common/bin/Debug/net6.0/linux-x64/common.dll
+/home/shane/source/repos/dotnet/sample-api/common/bin/Debug/net6.0/linux-x64/ref/common.dll
+/home/shane/source/repos/dotnet/sample-api/common/bin/Debug/net6.0/linux-x64/common.pdb
+/home/shane/source/repos/dotnet/sample-api/common/obj/Debug/net6.0/linux-x64/common.csproj.AssemblyReference.cache
+/home/shane/source/repos/dotnet/sample-api/common/obj/Debug/net6.0/linux-x64/common.GeneratedMSBuildEditorConfig.editorconfig
+/home/shane/source/repos/dotnet/sample-api/common/obj/Debug/net6.0/linux-x64/common.AssemblyInfoInputs.cache
+/home/shane/source/repos/dotnet/sample-api/common/obj/Debug/net6.0/linux-x64/common.AssemblyInfo.cs
+/home/shane/source/repos/dotnet/sample-api/common/obj/Debug/net6.0/linux-x64/common.csproj.CoreCompileInputs.cache
+/home/shane/source/repos/dotnet/sample-api/common/obj/Debug/net6.0/linux-x64/common.dll
+/home/shane/source/repos/dotnet/sample-api/common/obj/Debug/net6.0/linux-x64/ref/common.dll
+/home/shane/source/repos/dotnet/sample-api/common/obj/Debug/net6.0/linux-x64/common.pdb

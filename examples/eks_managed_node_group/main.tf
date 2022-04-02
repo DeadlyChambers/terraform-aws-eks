@@ -4,13 +4,14 @@ provider "aws" {
 
 locals {
   name            = "ex-${replace(basename(path.cwd), "_", "-")}"
-  cluster_version = "1.21"
-  region          = "eu-west-1"
-
+  cluster_version = "2.9"
+  region          = "us-east-2"
+  terra_role  ="arn:aws:iam::503517101544:role/so-inshane-developer-role"
+  terra_user  ="arn:aws:iam::503517101544:user/terraform-user"
   tags = {
     Example    = local.name
-    GithubRepo = "terraform-aws-eks"
-    GithubOrg  = "terraform-aws-modules"
+    GithubRepo = "sample-api"
+    GithubOrg  = "soinshane"
   }
 }
 
@@ -94,7 +95,7 @@ module "eks" {
   eks_managed_node_group_defaults = {
     ami_type       = "AL2_x86_64"
     disk_size      = 50
-    instance_types = ["m6i.large", "m5.large", "m5n.large", "m5zn.large"]
+    instance_types = ["t2.nano"]
 
     # We are using the IRSA created below for permissions
     # However, we have to deploy with the policy attached FIRST (when creating a fresh cluster)
@@ -119,53 +120,53 @@ module "eks" {
       }
     }
 
-    # Default node group - as provided by AWS EKS using Bottlerocket
-    bottlerocket_default = {
-      # By default, the module creates a launch template to ensure tags are propagated to instances, etc.,
-      # so we need to disable it to use the default template provided by the AWS EKS managed node group service
-      create_launch_template = false
-      launch_template_name   = ""
+    # # Default node group - as provided by AWS EKS using Bottlerocket
+    # bottlerocket_default = {
+    #   # By default, the module creates a launch template to ensure tags are propagated to instances, etc.,
+    #   # so we need to disable it to use the default template provided by the AWS EKS managed node group service
+    #   create_launch_template = false
+    #   launch_template_name   = ""
 
-      ami_type = "BOTTLEROCKET_x86_64"
-      platform = "bottlerocket"
-    }
+    #   ami_type = "BOTTLEROCKET_x86_64"
+    #   platform = "bottlerocket"
+    # }
 
-    # Adds to the AWS provided user data
-    bottlerocket_add = {
-      ami_type = "BOTTLEROCKET_x86_64"
-      platform = "bottlerocket"
+    # # Adds to the AWS provided user data
+    # bottlerocket_add = {
+    #   ami_type = "BOTTLEROCKET_x86_64"
+    #   platform = "bottlerocket"
 
-      # this will get added to what AWS provides
-      bootstrap_extra_args = <<-EOT
-      # extra args added
-      [settings.kernel]
-      lockdown = "integrity"
-      EOT
-    }
+    #   # this will get added to what AWS provides
+    #   bootstrap_extra_args = <<-EOT
+    #   # extra args added
+    #   [settings.kernel]
+    #   lockdown = "integrity"
+    #   EOT
+    # }
 
-    # Custom AMI, using module provided bootstrap data
-    bottlerocket_custom = {
-      # Current bottlerocket AMI
-      ami_id   = data.aws_ami.eks_default_bottlerocket.image_id
-      platform = "bottlerocket"
+    # # Custom AMI, using module provided bootstrap data
+    # bottlerocket_custom = {
+    #   # Current bottlerocket AMI
+    #   ami_id   = data.aws_ami.eks_default_bottlerocket.image_id
+    #   platform = "bottlerocket"
 
-      # use module user data template to boostrap
-      enable_bootstrap_user_data = true
-      # this will get added to the template
-      bootstrap_extra_args = <<-EOT
-      # extra args added
-      [settings.kernel]
-      lockdown = "integrity"
+    #   # use module user data template to boostrap
+    #   enable_bootstrap_user_data = true
+    #   # this will get added to the template
+    #   bootstrap_extra_args = <<-EOT
+    #   # extra args added
+    #   [settings.kernel]
+    #   lockdown = "integrity"
 
-      [settings.kubernetes.node-labels]
-      "label1" = "foo"
-      "label2" = "bar"
+    #   [settings.kubernetes.node-labels]
+    #   "label1" = "foo"
+    #   "label2" = "bar"
 
-      [settings.kubernetes.node-taints]
-      "dedicated" = "experimental:PreferNoSchedule"
-      "special" = "true:NoSchedule"
-      EOT
-    }
+    #   [settings.kubernetes.node-taints]
+    #   "dedicated" = "experimental:PreferNoSchedule"
+    #   "special" = "true:NoSchedule"
+    #   EOT
+    # }
 
     # Use existing/external launch template
     external_lt = {
@@ -174,39 +175,6 @@ module "eks" {
       launch_template_version = aws_launch_template.external.default_version
     }
 
-    # Use a custom AMI
-    custom_ami = {
-      ami_type = "AL2_ARM_64"
-      # Current default AMI used by managed node groups - pseudo "custom"
-      ami_id = data.aws_ami.eks_default_arm.image_id
-
-      # This will ensure the boostrap user data is used to join the node
-      # By default, EKS managed node groups will not append bootstrap script;
-      # this adds it back in using the default template provided by the module
-      # Note: this assumes the AMI provided is an EKS optimized AMI derivative
-      enable_bootstrap_user_data = true
-
-      instance_types = ["t4g.medium"]
-    }
-
-    # Demo of containerd usage when not specifying a custom AMI ID
-    # (merged into user data before EKS MNG provided user data)
-    containerd = {
-      name = "containerd"
-
-      # See issue https://github.com/awslabs/amazon-eks-ami/issues/844
-      pre_bootstrap_user_data = <<-EOT
-      #!/bin/bash
-      set -ex
-      cat <<-EOF > /etc/profile.d/bootstrap.sh
-      export CONTAINER_RUNTIME="containerd"
-      export USE_MAX_PODS=false
-      export KUBELET_EXTRA_ARGS="--max-pods=110"
-      EOF
-      # Source extra environment variables in bootstrap script
-      sed -i '/^set -o errexit/a\\nsource /etc/profile.d/bootstrap.sh' /etc/eks/bootstrap.sh
-      EOT
-    }
 
     # Complete
     complete = {
@@ -216,26 +184,15 @@ module "eks" {
       subnet_ids = module.vpc.private_subnets
 
       min_size     = 1
-      max_size     = 7
+      max_size     = 2
       desired_size = 1
 
-      ami_id                     = data.aws_ami.eks_default.image_id
-      enable_bootstrap_user_data = true
-      bootstrap_extra_args       = "--container-runtime containerd --kubelet-extra-args '--max-pods=20'"
-
-      pre_bootstrap_user_data = <<-EOT
-      export CONTAINER_RUNTIME="containerd"
-      export USE_MAX_PODS=false
-      EOT
-
-      post_bootstrap_user_data = <<-EOT
-      echo "you are free little kubelet!"
-      EOT
+      #ami_id                     = data.aws_ami.eks_default.image_id
 
       capacity_type        = "SPOT"
       disk_size            = 256
       force_update_version = true
-      instance_types       = ["m6i.large", "m5.large", "m5n.large", "m5zn.large"]
+      instance_types       = ["t2.nano"]
       labels = {
         GithubRepo = "terraform-aws-eks"
         GithubOrg  = "terraform-aws-modules"
@@ -265,8 +222,8 @@ module "eks" {
           device_name = "/dev/xvda"
           ebs = {
             volume_size           = 75
-            volume_type           = "gp3"
-            iops                  = 3000
+            volume_type           = "gp2"
+            iops                  = 1000
             throughput            = 150
             encrypted             = true
             kms_key_id            = aws_kms_key.ebs.arn
@@ -297,6 +254,7 @@ module "eks" {
       security_group_name            = "eks-managed-node-group-complete-example"
       security_group_use_name_prefix = false
       security_group_description     = "EKS managed node group complete example security group"
+      //Probably dont need
       security_group_rules = {
         phoneOut = {
           description = "Hello CloudFlare"
@@ -338,6 +296,7 @@ resource "aws_iam_role_policy_attachment" "additional" {
 
   policy_arn = aws_iam_policy.node_additional.arn
   role       = each.value.iam_role_name
+  #tags = local.tags
 }
 
 ################################################################################
@@ -376,6 +335,42 @@ locals {
       }
     }]
   })
+
+    # we have to combine the configmap created by the eks module with the externally created node group/profile sub-modules
+
+  aws_auth_configmap_yaml = <<-EOT
+  ${chomp(module.eks.aws_auth_configmap_yaml)}
+      - rolearn: ${local.terra_user}
+        username: system:node
+        groups:
+          - system:masters
+      - rolearn: ${local.terra_role}
+        username: admin:{{AccessKey}}
+        groups:
+          - system:masters
+          - system:bootstrappers
+          - system:nodes
+      - rolearn: ${local.terra_role}
+        username: terraform:{{AccessKey}}
+        groups:
+          - system:masters
+          - system:bootstrappers
+          - system:nodes
+      - rolearn: ${local.terra_role}
+        username: system:node:{{EC2PrivateDNSName}}
+        groups:
+          - system:masters
+          - system:bootstrappers
+          - system:nodes
+      - rolearn: module.eks.eks_managed_node_groups[*].iam_role_arn
+        username: system:node:{{EC2PrivateDNSName}}
+        groups:
+          - system:masters
+          - system:bootstrappers
+          - system:nodes
+  EOT
+
+
 }
 
 resource "null_resource" "patch" {
@@ -419,9 +414,9 @@ module "vpc" {
   single_nat_gateway   = true
   enable_dns_hostnames = true
 
-  enable_flow_log                      = true
-  create_flow_log_cloudwatch_iam_role  = true
-  create_flow_log_cloudwatch_log_group = true
+  # enable_flow_log                      = true
+  # create_flow_log_cloudwatch_iam_role  = true
+  # create_flow_log_cloudwatch_log_group = true
 
   public_subnet_tags = {
     "kubernetes.io/cluster/${local.name}" = "shared"
@@ -447,7 +442,7 @@ module "vpc_cni_irsa" {
   oidc_providers = {
     main = {
       provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:aws-node"]
+      namespace_service_accounts = ["kube-system:aws-node", "terraform"]
     }
   }
 
@@ -484,6 +479,8 @@ resource "aws_kms_key" "ebs" {
   description             = "Customer managed key to encrypt EKS managed node group volumes"
   deletion_window_in_days = 7
   policy                  = data.aws_iam_policy_document.ebs.json
+
+    tags = local.tags
 }
 
 # This policy is required for the KMS key used for EKS root volumes, so the cluster is allowed to enc/dec/attach encrypted EBS volumes
@@ -493,10 +490,15 @@ data "aws_iam_policy_document" "ebs" {
     sid       = "Enable IAM User Permissions"
     actions   = ["kms:*"]
     resources = ["*"]
+  }
+
+# I was connecting some aspects, and got a little side tracked with a concept
+# [AWS, K8S, and TF act like DNA](../NOTES.md)
 
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root",
+      "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/terraform-user"]
     }
   }
 
@@ -617,7 +619,8 @@ resource "aws_launch_template" "external" {
 }
 
 resource "tls_private_key" "this" {
-  algorithm = "RSA"
+   algorithm = "RSA"
+  rsa_bits  = 4096
 }
 
 resource "aws_key_pair" "this" {
@@ -628,7 +631,7 @@ resource "aws_key_pair" "this" {
 }
 
 resource "aws_security_group" "remote_access" {
-  name_prefix = "${local.name}-remote-access"
+  name = "${local.name}-remote-access"
   description = "Allow remote SSH access"
   vpc_id      = module.vpc.vpc_id
 
@@ -668,35 +671,18 @@ resource "aws_iam_policy" "node_additional" {
     ]
   })
 
+##Something tells me we need more than just an EC2 describe for the nodes
+
   tags = local.tags
 }
 
-data "aws_ami" "eks_default" {
-  most_recent = true
-  owners      = ["amazon"]
+# data "aws_ami" "eks_default" {
+#   most_recent = true
+#   owners      = ["amazon"]
 
-  filter {
-    name   = "name"
-    values = ["amazon-eks-node-${local.cluster_version}-v*"]
-  }
-}
+#   filter {
+#     name   = "name"
+#     values = ["amazon-eks-node-${local.cluster_version}-v*"]
+#   }
+# }
 
-data "aws_ami" "eks_default_arm" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["amazon-eks-arm64-node-${local.cluster_version}-v*"]
-  }
-}
-
-data "aws_ami" "eks_default_bottlerocket" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["bottlerocket-aws-k8s-${local.cluster_version}-x86_64-*"]
-  }
-}

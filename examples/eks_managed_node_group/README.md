@@ -41,6 +41,11 @@ When using the default AMI provided by the EKS Managed Node Group service (i.e. 
 
 ## Usage
 
+### Expanded Usage
+
+I've brought in two [very basic .net apis](../api/README.md#build-docker) that can be updated using Docker. The two should snap toghether pretty seemlesly. The expectations will be to have a K8s cluster then have the authentication 
+and access be managed by Cognito and Vault
+
 To run this example you need to execute:
 
 ```bash
@@ -50,6 +55,7 @@ $ terraform apply
 ```
 
 Note that this example may create resources which cost money. Run `terraform destroy` when you don't need these resources.
+
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

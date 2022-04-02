@@ -316,7 +316,7 @@ variable "iam_role_additional_policies" {
 variable "cluster_iam_role_dns_suffix" {
   description = "Base DNS domain name for the current partition (e.g., amazonaws.com in AWS Commercial, amazonaws.com.cn in AWS China)"
   type        = string
-  default     = null
+  default     = "amazonaws.com"
 }
 
 variable "iam_role_tags" {
@@ -422,7 +422,7 @@ variable "eks_managed_node_group_defaults" {
   type        = any
   default     = {}
 }
-
+## Wish putin was not such a small man, that he thought war was the answer ###
 variable "putin_khuylo" {
   description = "Do you agree that Putin doesn't respect Ukrainian sovereignty and territorial integrity? More info: https://en.wikipedia.org/wiki/Putin_khuylo!"
   type        = bool
